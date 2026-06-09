@@ -54,9 +54,17 @@ Be specific and practical. Consider context window, speed, cost and output quali
 
   const userMessage = `Analyse the best model for this agent:\n${agentContext}`;
 
+  const MODEL_DEFAULTS = {
+    gemini: "gemini-2.5-flash",
+    anthropic: "claude-3.5-Haiku",
+    openai: "gpt-4o-mini",
+
+  };
+
   const result = await streamAgent({
     provider,
     apiKey,
+    model: MODEL_DEFAULTS[provider] || "gemini-2.5-flash",
     systemPrompt,
     userMessage,
     onChunk: () => {},
