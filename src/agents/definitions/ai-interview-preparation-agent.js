@@ -9,11 +9,34 @@ const aiInterviewPreparationAgent = {
   model: 'gpt-4o',
   inputs: [
     {
+      id: 'name',
+      label: 'Candidate Name',
+      type: 'text',
+      placeholder: 'e.g., John Doe',
+      required: true,
+    },
+    {
       id: 'experienceLevel',
       label: 'Experience Level',
       type: 'select',
       options: ['Intern', 'Junior', 'Mid-Level', 'Senior', 'Staff'],
       defaultValue: 'Junior',
+      required: true,
+    },
+    {
+      id: 'difficultyLevel',
+      label: 'Difficulty Level',
+      type: 'select',
+      options: ['Easy', 'Medium', 'Hard'],
+      defaultValue: 'Medium',
+      required: true,
+    },
+    {
+      id: 'interviewDuration',
+      label: 'Interview Duration',
+      type: 'select',
+      options: ['15 minutes', '30 minutes', '45 minutes', '60 minutes'],
+      defaultValue: '45 minutes',
       required: true,
     },
     {
@@ -39,6 +62,27 @@ const aiInterviewPreparationAgent = {
       required: false,
     },
     {
+      id: 'resumeUpload',
+      label: 'Resume (Paste text or details)',
+      type: 'textarea',
+      placeholder: 'Paste resume details to tailor the questions...',
+      required: false,
+    },
+    {
+      id: 'weakTopics',
+      label: 'Weak Topics',
+      type: 'textarea',
+      placeholder: 'e.g., Concurrency, Dynamic Programming, SQL...',
+      required: false,
+    },
+    {
+      id: 'previousInterviewHistory',
+      label: 'Previous Interview History',
+      type: 'textarea',
+      placeholder: 'Describe any relevant past interview history or challenges...',
+      required: false,
+    },
+    {
       id: 'focusTopics',
       label: 'Topics to Focus On',
       type: 'textarea',
@@ -54,12 +98,37 @@ const aiInterviewPreparationAgent = {
     },
   ],
   systemPrompt: `You are an expert technical interviewer at a top-tier tech company.
-Your task is to simulate an interview based on the provided parameters, and then provide comprehensive feedback as if the interview has concluded.
+Your task is to simulate an interview based on the provided inputs, which include:
+- Candidate Name: {{name}}
+- Experience Level: {{experienceLevel}}
+- Difficulty Level: {{difficultyLevel}}
+- Interview Duration: {{interviewDuration}}
+- Target Company / Industry: {{targetCompany}}
+- Interview Type: {{interviewType}}
+- Preferred Programming Language: {{programmingLanguage}}
+- Resume Details: {{resumeUpload}}
+- Weak Topics: {{weakTopics}}
+- Previous Interview History: {{previousInterviewHistory}}
+- Focus Topics: {{focusTopics}}
+- Job Description: {{jobDescription}}
 
-Please structure your output as follows:
-1. **Interview Simulation:** Present 2-3 realistic questions based on the selected interview type, difficulty, and focus topics. For each question, provide a subtle hint or expected approach that an interviewer might look for.
-2. **Evaluation Framework:** Outline the criteria you would use to evaluate the candidate's answers (e.g., Time/Space complexity, Scalability, Communication, Leadership principles).
-3. **Mock Feedback & Learning Plan:** Give an example of what good feedback looks like, including a performance score breakdown, weak area analysis, and a personalized improvement roadmap with recommended practice topics.
+Tailor your questions, expected approaches, and code examples to the target company's style, candidate's experience level, and difficulty level. If coding is involved, provide snippets or templates in the preferred programming language. Align questions to the responsibilities and tech stack in the job description, and prioritize focus topics and weak topics when generating questions, hints, evaluation criteria, and the learning plan.
+
+To support an interactive, multi-turn interview flow (handled by the system runner or frontend):
+1. Act as a live interviewer: ask a single context-aware question at a time and await candidate input.
+2. Provide progressive, incremental hints on request or if the candidate stalls.
+3. Ask targeted follow-up questions to probe candidate's depth of understanding.
+4. Emit explicit realtime feedback markers for the system runner to process turns:
+   - Use '[ASK]' when presenting a new question.
+   - Use '[HINT]' when providing assistance.
+   - Use '[FOLLOWUP]' when asking a follow-up query.
+   - Use '[END]' when the simulation is ready to close or when receiving an explicit end command.
+5. Only produce the final feedback and evaluation upon an end signal or concluding command.
+
+For single-session runs or when summarizing/concluding:
+1. **Interview Simulation:** Present realistic questions with expected approaches and step-by-step hints for the candidate.
+2. **Evaluation Framework:** Outline the criteria used to evaluate candidate responses (e.g., Time/Space complexity, Scalability, Communication, Leadership Principles/Core Values).
+3. **Mock Feedback & Learning Plan:** Provide a detailed feedback report tailored to the candidate, including a performance scorecard breakdown, weak area analysis, and a personalized improvement roadmap/plan.
 
 Always be encouraging but maintain a high standard. Format your output beautifully in Markdown.`,
   outputType: 'markdown',
