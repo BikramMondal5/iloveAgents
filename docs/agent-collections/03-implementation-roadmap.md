@@ -1,196 +1,68 @@
-<<<<<<< ours
-<<<<<<< ours
 # Agent Collections: Implementation Roadmap
 
 ## Phase 1: types, constants, localStorage helpers
 
-- **Files likely to touch**
-  - Add `src/lib/agentCollections/constants.js`
-  - Add `src/lib/agentCollections/storage.js`
-- **What to add/change**
-  - Define storage key and max limits.
-  - Define the persisted state shape through JSDoc comments.
-  - Implement safe load/save helpers with JSON parse protection.
-  - Normalize corrupted state and dedupe agent IDs inside collections.
-- **Risk level**: Low.
-- **Validation steps**
-  - Manually call helpers in browser devtools or temporary unit-like script if test tooling is added later.
-  - Confirm no source UI imports these files yet if docs-first implementation is being staged.
+- Add localStorage constants and limits.
+- Define the persisted collection shape with clear JSDoc or inline documentation.
+- Implement safe load/save helpers with JSON parse protection.
+- Normalize corrupted state, dedupe agent IDs, and cap stored values at product limits.
 
 ## Phase 2: collection state/store/hook
 
-- **Files likely to touch**
-  - Add `src/lib/agentCollections/useAgentCollections.js`
-- **What to add/change**
-  - Model after `src/lib/useFavorites.js` with module-level listeners for cross-component sync.
-  - Expose collection state and CRUD/add/remove actions.
-  - Return structured action results for validation errors.
-- **Risk level**: Medium.
-- **Validation steps**
-  - Mount hook in a temporary page/component during development.
-  - Verify two components update after one action, matching Favorites behavior.
-  - Verify localStorage persists after refresh.
+- Add a localStorage-backed collection hook modeled after the existing favorites sync pattern.
+- Expose collection state plus create, delete, rename, add-agent, remove-agent, lookup, and membership helpers.
+- Return consistent mutation results: `{ ok: true, ... }` for success and `{ ok: false, error }` for failures.
 
 ## Phase 3: create/delete/rename collection UI
 
-- **Files likely to touch**
-  - Add `src/pages/CollectionsPage.jsx`
-  - Add `src/components/collections/CreateCollectionForm.jsx`
-  - Add `src/components/collections/CollectionCard.jsx`
-  - Later update `src/App.jsx` route table.
-- **What to add/change**
-  - Create collection overview page.
-  - Add create form with validation and max-10 disabled state.
-  - Add delete and rename controls, ideally with accessible labels and non-destructive confirmation for delete.
-- **Risk level**: Medium.
-- **Validation steps**
-  - Create, rename, delete collections.
-  - Refresh and confirm persisted state.
-  - Try empty and duplicate names.
+- Add the `/collections` overview page.
+- Provide empty, max-limit, create, rename, and delete states.
+- Keep validation messages close to the action that produced them.
 
 ## Phase 4: add/remove agents from collections
 
-- **Files likely to touch**
-  - Add `src/components/collections/CollectionAgentPicker.jsx`
-  - Add or update `src/pages/CollectionDetailPage.jsx`
-  - Potentially update `src/components/AgentCard.jsx` only if adding collection actions on cards.
-- **What to add/change**
-  - Load all agents through `loadAllAgents()` or `useAgents()`.
-  - Show available agents with search/filter inside the picker.
-  - Add/remove agent IDs via hook actions.
-  - Prevent duplicates and enforce max 15 agents.
-- **Risk level**: Medium.
-- **Validation steps**
-  - Add a known agent to a collection.
-  - Confirm duplicate add is blocked.
-  - Add 15 agents and confirm the 16th is blocked.
-  - Remove and re-add an agent.
+- Add `src/components/collections/CollectionAgentPicker.jsx`.
+- Add or update `src/pages/CollectionDetailPage.jsx`.
+- Show a searchable checklist of all agents.
+- Treat checked rows as collection members and unchecked rows as non-members.
+- Toggling a checked agent removes it; toggling an unchecked agent adds it.
+- Enforce duplicate prevention and the 15-agent collection limit.
+- Disable unchecked rows while the collection is full while keeping selected rows removable.
 
-## Phase 5: `/collections` page
+## Phase 5: routes and page metadata
 
-- **Files likely to touch**
-  - `src/App.jsx`
-  - `src/pages/CollectionsPage.jsx`
-  - Possibly `src/lib/useDocumentTitle.js` consumers only through page calls.
-- **What to add/change**
-  - Add route under `MainLayout`.
-  - Set document title to `Collections`.
-  - Provide overview, empty state, and CTA to create the first collection.
-- **Risk level**: Low.
-- **Validation steps**
-  - Navigate to `/collections` directly.
-  - Navigate from sidebar link once Phase 7 is implemented.
-  - Confirm battle routes remain full-screen and unaffected.
+- Add `/collections` and `/collections/:id` under the main layout in `src/App.jsx`.
+- Set document titles for the collections overview and detail pages.
+- Preserve battle routes as full-screen routes outside the main layout.
 
-## Phase 6: collection detail page if routing supports it
+## Phase 6: collection detail edge cases
 
-- **Files likely to touch**
-  - `src/App.jsx`
-  - Add `src/pages/CollectionDetailPage.jsx`
-  - Add/update collection components.
-- **What to add/change**
-  - Add `/collections/:collectionId` route.
-  - Resolve collection by ID from hook state.
-  - Resolve `agentIds` to agent objects from registry.
-  - Redirect or show a not-found/empty state for missing collection IDs.
-- **Risk level**: Medium.
-- **Validation steps**
-  - Open detail URL directly after refresh.
-  - Delete a collection while on its detail page and verify graceful navigation.
-  - Confirm stale/unknown agent IDs are filtered out.
+- Resolve collections with `getCollectionById(id)`.
+- Resolve collection `agentIds` against the agent registry.
+- Handle missing collections with a not-found state.
+- Filter stale or missing agent IDs so deleted or renamed agents do not crash the page.
 
 ## Phase 7: sidebar integration
 
-- **Files likely to touch**
-  - `src/components/Sidebar.jsx`
-  - Possibly add `src/components/collections/CollectionSidebarSection.jsx`
-- **What to add/change**
-  - Add top-level “Collections” link/section below Suites and above agent categories.
-  - Show collection links with agent counts.
-  - Keep category search and active category logic unchanged.
-  - Highlight `/collections` and `/collections/:collectionId` routes using `NavLink`.
-- **Risk level**: Medium-high because `Sidebar.jsx` has dense UI and route-active behavior.
-- **Validation steps**
-  - Confirm agent category auto-expand still works on `/agent/:id`.
-  - Confirm Suites link still works.
-  - Confirm collection links close mobile sidebar via `onClose`.
-  - Confirm sidebar still shows all agent categories.
+- Add a Collections section below Suites and above agent categories.
+- Show the all-collections link, collection links, and live agent-count badges.
+- Keep category search and active-agent category expansion unchanged.
+- Close the mobile sidebar when collection links are selected.
 
-## Phase 8: validation, empty states, edge cases
+## Phase 8: validation and manual QA
 
-- **Files likely to touch**
-  - Collection hook/storage files.
-  - Collection pages/components.
-- **What to add/change**
-  - Polish error messages and disabled states.
-  - Add empty collection state.
-  - Add max-limit messages.
-  - Handle malformed localStorage.
-  - Decide and document duplicate-name behavior.
-- **Risk level**: Medium.
-- **Validation steps**
-  - Manually edit localStorage to malformed JSON and reload.
-  - Try maximum collections and maximum agents.
-  - Try deleted/stale agent IDs.
+- Run `npm run build`.
+- Run `npm run dev`.
+- Verify creating, renaming, deleting, opening, adding to, removing from, and refreshing collections.
+- Verify Favorites, Suites, Workflows, Battle routes, and the agent registry still render.
 
-## Phase 9: testing/manual QA
+## Debugging Note: Blank Page After Merge
 
-- **Files likely to touch**
-  - No required source files unless adding tests.
-  - Potentially add a test framework later; currently `package.json` has no test script.
-- **What to add/change**
-  - Run `npm run build`.
-  - Run the app with `npm run dev` and execute the QA checklist.
-  - If test tooling is added later, unit test storage normalization and hook actions first.
-- **Risk level**: Low for manual QA; medium if introducing new test tooling.
-- **Validation steps**
-  - Complete `docs/agent-collections/05-qa-checklist.md`.
-  - Confirm Favorites, Suites, Recent Agents, Workflows, and Battle routes are unaffected.
+The blank page was caused by unresolved Agent Collections merge fallout. The active runtime issue was `CollectionAgentPicker.jsx` importing `MAX_COLLECTION_AGENTS`, which was not exported by `src/lib/useCollections.js`; Vite failed module evaluation for the collection detail route. The roadmap doc also still contained unresolved conflict markers.
 
-## Implementation update for Issue #569
+Fixed by aligning the picker with the exported `MAX_AGENTS_PER_COLLECTION` constant, making picker mutation feedback tolerate both boolean and `{ ok, error }` return values, keeping collection detail stale-agent handling non-crashing, and cleaning the roadmap conflict markers.
 
-### What was implemented
+Validation commands run:
 
-- Added a localStorage-backed Agent Collections state layer with safe parsing, normalization, listener-based cross-component sync, collection creation/deletion/renaming, agent add/remove helpers, duplicate prevention, and collection/agent limits.
-- Added collection management UI at `/collections` with empty state, collection cards, create, rename, delete, and open actions.
-- Added collection detail UI at `/collections/:id` with collection name, agent counts, stale-agent tolerance, full `AgentCard` rendering, runnable/openable agent cards, remove-agent actions, and empty/not-found states.
-- Added an `Add to Collection` action to agent cards using a modal picker that can add to existing collections or create a new collection and add the agent immediately.
-- Added a dedicated `Collections` sidebar section below Suites and above agent categories, with links and live agent-count badges.
-
-### Deviations from the original plan
-
-- Delete actions use immediate deletion instead of a confirmation modal to keep the implementation scoped and consistent with several compact destructive actions already present in the app.
-- Playwright MCP manual validation was not executed in this environment because no Playwright MCP tool was available in the session; production build validation was run instead.
-- Supabase sync was intentionally not added; the storage layer remains local-only and isolated for future extensibility.
-
-### Files changed
-
-- `src/lib/useCollections.js`
-- `src/components/CollectionModal.jsx`
-- `src/components/CollectionPicker.jsx`
-- `src/components/AgentCard.jsx`
-- `src/components/Sidebar.jsx`
-- `src/pages/CollectionsPage.jsx`
-- `src/pages/CollectionDetailPage.jsx`
-- `src/App.jsx`
-- `docs/agent-collections/03-implementation-roadmap.md`
-
-### Manual QA results
-
-- Verified production build succeeds with `npm run build`.
-- Verified the app compiles with the new collection routes, sidebar integration, agent-card picker integration, and localStorage collection hook.
-- Playwright MCP scenario validation remains pending until a Playwright MCP browser tool is available.
-=======
-=======
->>>>>>> theirs
-# Agent Collections implementation roadmap
-
-## Phase 4: add/remove agents from collections
-
-Phase 4 was corrected to use a checkbox-based full-agent picker on the collection detail page. The picker loads the same agent registry data used by the all-agents experience, shows every available agent with search, and treats checked rows as collection members and unchecked rows as non-members.
-
-The implementation enforces collection membership through the existing collection hook actions: toggling a checked agent removes it, toggling an unchecked agent adds it, duplicate additions are ignored, and the 15-agent maximum is enforced. When a collection is full, unchecked agents are disabled with clear feedback while selected agents remain removable.
-<<<<<<< ours
->>>>>>> theirs
-=======
->>>>>>> theirs
+- `npm run build`
+- `git diff --check`
