@@ -238,7 +238,7 @@ async function handleErrorResponse(response, provider = "unknown") {
  */
 export async function runAgent({ provider, model, apiKey, systemPrompt, userMessage }, options = {})  {
   const config = PROVIDER_CONFIGS[provider]
-  const { signal } = options;
+  const { signal } = options || {};
 
   if (!config) {
     throw new Error(`Unsupported provider: ${provider}`)
