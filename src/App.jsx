@@ -19,9 +19,9 @@ import NotFoundPage from './pages/NotFoundPage'
 import SuitesPage from './pages/SuitesPage'
 import CollectionsPage from './pages/CollectionsPage'
 import CollectionDetailPage from './pages/CollectionDetailPage'
+import SchedulerPage from './pages/SchedulerPage'
 import ErrorBoundary from './components/ErrorBoundary'
 
-// Shared layout: Navbar + Sidebar + main content area
 function MainLayout({ sidebarOpen, setSidebarOpen }) {
   return (
     <>
@@ -46,25 +46,22 @@ export default function App() {
       <ScrollToBottom />
       <ErrorBoundary>
         <Routes>
-          {/* Battle Mode — full-screen, own layout */}
           <Route path="/battle" element={<BattleModeLanding />} />
           <Route path="/battle/setup" element={<BattleModeSetup />} />
           <Route path="/battle/arena" element={<BattleModeArena />} />
           <Route path="/battle/winner" element={<BattleModeWinner />} />
 
-          {/* Main app layout — all routes share Navbar + Sidebar */}
           <Route element={<MainLayout sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/agent/:id" element={<AgentPage />} />
 
-            {/* Suites */}
             <Route path="/suites" element={<SuitesPage />} />
 
-            {/* Collections */}
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/collections/:id" element={<CollectionDetailPage />} />
 
-            {/* Workflow routes */}
+            <Route path="/scheduler" element={<SchedulerPage />} />
+
             <Route path="/workflows" element={<WorkflowLibrary />} />
             <Route path="/workflows/build" element={<WorkflowBuilder />} />
             <Route path="/workflows/:id" element={<WorkflowDetail />} />
