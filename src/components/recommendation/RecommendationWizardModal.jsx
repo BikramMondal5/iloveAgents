@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { useRecommendationWizard } from '../../hooks/useRecommendationWizard'
 import RecommendationWizardStep from './RecommendationWizardStep'
@@ -76,10 +77,10 @@ export default function RecommendationWizardModal({ agents = [], isOpen, onClose
   const canGoBack = wizard.hasCompleted || wizard.currentStepIndex > 0
   const isLastStep = wizard.currentStepIndex === TOTAL_STEPS - 1
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4" role="presentation">
-      <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-sm" onClick={handleClose} aria-hidden="true" />
-      <section ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="recommendation-wizard-title" aria-describedby="recommendation-wizard-description" className={`relative flex max-h-[calc(100vh-2rem)] w-full ${wizard.hasCompleted ? 'max-w-3xl' : 'max-w-2xl'} flex-col overflow-hidden rounded-xl border border-white/40 bg-white shadow-2xl dark:border-border dark:bg-surface-card animate-fade-in`}>
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 pointer-events-none sm:p-4" role="presentation">
+      <div className="absolute inset-0 z-[101] bg-gray-950/60 backdrop-blur-sm pointer-events-auto" onClick={handleClose} aria-hidden="true" />
+      <section ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="recommendation-wizard-title" aria-describedby="recommendation-wizard-description" className={`relative z-[102] flex max-h-[calc(100vh-2rem)] w-full ${wizard.hasCompleted ? 'max-w-3xl' : 'max-w-2xl'} flex-col overflow-hidden rounded-xl border border-white/40 bg-white shadow-2xl pointer-events-auto dark:border-border dark:bg-surface-card animate-fade-in`}>
         <header className="shrink-0 border-b border-gray-200 p-5 dark:border-border">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -109,6 +110,7 @@ export default function RecommendationWizardModal({ agents = [], isOpen, onClose
           </footer>
         )}
       </section>
-    </div>
+    </div>,
+    document.body
   )
 }
