@@ -37,6 +37,7 @@ export default function RecommendationWizardModal({ agents = [], isOpen, onClose
 
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    document.body.classList.add('recommendation-wizard-open')
     window.setTimeout(() => focusWithoutScroll(headingRef.current), 0)
 
     const handleKeyDown = (event) => {
@@ -67,6 +68,7 @@ export default function RecommendationWizardModal({ agents = [], isOpen, onClose
 
     return () => {
       document.body.style.overflow = previousOverflow
+      document.body.classList.remove('recommendation-wizard-open')
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [handleClose, isOpen])
